@@ -11,3 +11,8 @@ module "test_vpc" {
 
   cidr_block = "10.234.0.0/24"
 }
+
+# Enable Cloudtrail (includes S3 bucket setup)
+module "cloudtrail" {
+  source = "./modules/cloudtrail"
+}
