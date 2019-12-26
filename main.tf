@@ -16,3 +16,10 @@ module "test_vpc" {
 module "cloudtrail" {
   source = "./modules/cloudtrail"
 }
+
+# Configure SNS topic and subscriptions
+module "sns" {
+  source = "./modules/sns"
+
+  module_depends_on = [module.cloudtrail.cloudtrail_s3_bucket_id]
+}
