@@ -17,9 +17,35 @@ module "cloudtrail" {
   source = "./modules/cloudtrail"
 }
 
-# Configure SNS topic and subscriptions
-module "sns" {
-  source = "./modules/sns"
+# Event Pipeline module for security group changes
+module "security_group_event" {
+  source            = "./modules/event_pipeline"
+  name              = "security_group"
+  event_title       = "Security Group Changes"
+  event_description = "Watches changes to security groups"
 
-  module_depends_on = [module.cloudtrail.cloudtrail_s3_bucket_id]
+  event_pattern = <<PATTERN
+{
+  "source": [
+    "aws.ec2"
+  ],
+  "detail-type": [
+    "AWS API Call via CloudTrail"
+  ],
+  "detail": {
+    "eventSource": [
+      "ec2.amazonaws.com"
+    ],
+    "eventName": [
+      "AuthorizeSecurityGroupIngress",
+      "RevokeSecurityGroupIngress"
+    ],
+    "requestParameters": {
+      "groupId": [
+        "${module.test_vpc.default_security_group_id}"
+      ]
+    }
+  }
+}
+PATTERN
 }
