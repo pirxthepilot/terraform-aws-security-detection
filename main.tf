@@ -20,7 +20,7 @@ module "cloudtrail" {
 # Event Pipeline module for security group changes
 module "security_group_event" {
   source            = "./modules/event_pipeline"
-  name              = "security_group"
+  name              = "security-group"
   event_title       = "Security Group Changes"
   event_description = "Watches changes to security groups"
 
