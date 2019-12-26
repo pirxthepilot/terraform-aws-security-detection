@@ -1,3 +1,14 @@
+/*
+*  Instance name
+*/
+
+variable name {}
+
+
+/*
+*  Other vars
+*/
+
 variable "event_title" {
   type        = string
   default     = null
