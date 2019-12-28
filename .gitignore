@@ -42,3 +42,4 @@ override.tf.json
 *.swp
 .vagrant/
 .vscode/
+scratch/
