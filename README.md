@@ -1,1 +1,3 @@
-# Terraform config for security event detection and response in AWS
+# terraform-aws-security-detection
+
+Terraform configuration that deploys a full working demo of an AWS security detection and response system

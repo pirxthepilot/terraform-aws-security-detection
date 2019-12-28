@@ -4,12 +4,14 @@ provider "aws" {
   region  = var.region
 }
 
-# Spin up the test VPC whose default security
-# group will be used for this deployment
-module "test_vpc" {
-  source = "./modules/test_vpc"
-
+# Spin up the test VPC whose default security group will
+# will be used for this deployment
+resource "aws_vpc" "security_demo" {
   cidr_block = "10.234.0.0/24"
+
+  tags = {
+    Name = "Security Detection Demo"
+  }
 }
 
 # Enable Cloudtrail (includes S3 bucket setup)
@@ -17,12 +19,12 @@ module "cloudtrail" {
   source = "./modules/cloudtrail"
 }
 
-# Event Pipeline module for security group changes
-module "security_group_event" {
+# Event Pipeline module for security group ingress rule changes
+module "sg_ingress_rule_event" {
   source            = "./modules/event_pipeline"
-  name              = "security-group"
-  event_title       = "Security Group Changes"
-  event_description = "Watches changes to security groups"
+  name              = "sg-ingress-rule"
+  event_title       = "Security Group Ingress Rule Change"
+  event_description = "Changes to ingress rules in security groups"
 
   event_pattern = <<PATTERN
 {
@@ -42,7 +44,7 @@ module "security_group_event" {
     ],
     "requestParameters": {
       "groupId": [
-        "${module.test_vpc.default_security_group_id}"
+        "${aws_vpc.security_demo.default_security_group_id}"
       ]
     }
   }
