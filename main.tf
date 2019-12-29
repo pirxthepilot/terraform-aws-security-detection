@@ -17,6 +17,7 @@ resource "aws_vpc" "security_demo" {
 # Enable Cloudtrail (includes S3 bucket setup)
 module "cloudtrail" {
   source = "./modules/cloudtrail"
+  name   = "security-detection"
 }
 
 # Event Pipeline module for security group ingress rule changes
