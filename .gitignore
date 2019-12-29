@@ -37,6 +37,10 @@ override.tf.json
 # Ignored Terraform files
 *gitignore*.tf
 
+# Lambda function packages
+pkgtmp/
+*.zip
+
 # Misc
 .DS_Store
 *.swp

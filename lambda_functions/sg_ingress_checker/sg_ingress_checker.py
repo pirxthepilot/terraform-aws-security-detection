@@ -8,7 +8,7 @@ Detection:
     Detects rules that allow open access from any IP
 
 Response:
-    Proactively delete the offending rules
+    Reactively delete the offending rules
 """
 
 import json
@@ -22,7 +22,7 @@ WHITELIST_ICMP = True
 
 def detect_violations(data):
     """ Find rule violations """
-    rules = data['requestParameters']['ipPermissions']['items']
+    rules = data['requestParameters']['ipPermissions'].get('items')
     violations = []
     for rule in rules:
         # First, skip if rule is in whitelisted items
@@ -44,15 +44,15 @@ def detect_violations(data):
         ):
             continue
         # Now find violations in the rule
-        cidr_ips_v4 = [i['cidrIp'] for i in rule['ipRanges']['items']]
-        cidr_ips_v6 = [i['cidrIpv6'] for i in rule['ipv6Ranges']['items']]
+        cidr_ips_v4 = [i['cidrIp'] for i in rule['ipRanges'].get('items', [])]
+        cidr_ips_v6 = [i['cidrIpv6'] for i in rule['ipv6Ranges'].get('items', [])]
         if (
                 '0.0.0.0/0' in cidr_ips_v4 or
                 '::/0' in cidr_ips_v6
         ):
             violations.append(rule)
 
-        return violations
+    return violations
 
 
 def trigger_action(**kwargs):
