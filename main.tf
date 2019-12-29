@@ -51,3 +51,27 @@ module "sg_ingress_rule_event" {
 }
 PATTERN
 }
+
+# Lambda function for detection and response
+module "sg_ingress_rule_lambda" {
+  source      = "./modules/detection_lambda"
+  name        = "sg-ingress-rule"
+  description = "Ingress rule checker"
+
+  filename = "./pkgtmp/sg_ingress_checker.zip"
+  handler  = "sg_ingress_checker.lambda_handler"
+}
+
+# Subscribe the lambda to the SNS topic
+resource "aws_sns_topic_subscription" "sg_ingress" {
+  topic_arn = module.sg_ingress_rule_event.sns_topic_arn
+  protocol  = "lambda"
+  endpoint  = module.sg_ingress_rule_lambda.lambda_function_arn
+}
+
+resource "aws_lambda_permission" "sg_ingress" {
+  action        = "lambda:InvokeFunction"
+  function_name = module.sg_ingress_rule_lambda.lambda_function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = module.sg_ingress_rule_event.sns_topic_arn
+}
