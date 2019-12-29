@@ -1,10 +1,12 @@
-# S3 bucket for Cloudtrail logs
+/*
+*  S3 bucket for Cloudtrail logs
+*/
+
 resource "aws_s3_bucket" "cloudtrail_logs" {
-  bucket_prefix = var.cloudtrail_s3_bucket_prefix
+  bucket_prefix = "${var.name}-"
   force_destroy = true
 }
 
-# S3 bucket policy
 resource "aws_s3_bucket_policy" "cloudtrail_logs" {
   bucket = aws_s3_bucket.cloudtrail_logs.id
 
@@ -40,11 +42,15 @@ resource "aws_s3_bucket_policy" "cloudtrail_logs" {
 POLICY
 }
 
-# Enable Cloudtrail
-resource "aws_cloudtrail" "this" {
-  name                          = var.cloudtrail_name
+
+/*
+*  Cloudtrail
+*/
+
+resource "aws_cloudtrail" "security_detection" {
+  name                          = var.name
   s3_bucket_name                = aws_s3_bucket.cloudtrail_logs.id
-  s3_key_prefix                 = "cloudtrail"
+  s3_key_prefix                 = "cloudtrail-${var.name}-"
   include_global_service_events = false
 
   tags = {
