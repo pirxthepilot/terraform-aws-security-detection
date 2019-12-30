@@ -8,10 +8,12 @@ Detection:
     Detects rules that allow open access from any IP
 
 Response:
-    Reactively delete the offending rules
+    Delete the offending rules
 """
 
 import json
+import boto3
+from botocore.exceptions import ClientError
 
 
 # Whitelists - modify as needed
@@ -55,11 +57,35 @@ def detect_violations(data):
     return violations
 
 
-def trigger_action(**kwargs):
-    """ Perform action on violations """
-    sgid = kwargs['sgid']
-    for rule in kwargs['violations']:
-        print('[{}] Ingress rule violation: {}'.format(sgid, json.dumps(rule)))
+def delete_ingress_rules(sgid, rules):
+    """ Delete ingress rules from security group """
+
+    def capped(list_):
+        """ Convert list of dicts with capitalized keys """
+        result = []
+        for dict_ in list_:
+            result.append({(lambda w: w[0].upper()+w[1:])(k): v for (k, v) in
+                           dict_.items()})
+        return result
+
+    def remap(rule):
+        """ Convert rule from event data into format accepted by the
+        boto3 function """
+        return {
+            'IpProtocol'      : rule['ipProtocol'],
+            'FromPort'        : rule['fromPort'],
+            'ToPort'          : rule['toPort'],
+            'IpRanges'        : capped(rule['ipRanges'].get('items', [])),
+            'Ipv6Ranges'      : capped(rule['ipv6Ranges'].get('items', [])),
+        }
+
+    client = boto3.client('ec2')
+    # Not storing the response because any errors will be expressed as
+    # ClientError
+    client.revoke_security_group_ingress(
+        GroupId=sgid,
+        IpPermissions=[remap(rule) for rule in rules]
+    )
 
 
 def lambda_handler(event, context):
@@ -70,21 +96,32 @@ def lambda_handler(event, context):
     # nothing otherwise
     event_name = 'AuthorizeSecurityGroupIngress'
     if detail['eventName'] != event_name:
-        print('Not a {} event - skipping'.format(event_name))
+        print('Not of event {} - skipping'.format(event_name))
         return
 
     # Collect some useful params
     sgid = detail['requestParameters']['groupId']
 
-    # Detection proper
+    ## DETECTION ##
+
     violations = detect_violations(detail)
     if not violations:
         print('No violations detected in {} event on {}'.format(event_name, sgid))
         return
 
-    # Action proper
-    data = {
-        'sgid': sgid,
-        'violations': violations,
-    }
-    trigger_action(**data)
+    ## ACTION ##
+
+    # Log the violations
+    print('Detected ingress rule violations! Pertinent event data follows.')
+    fields = ['eventTime', 'userIdentity', 'awsRegion', 'sourceIPAddress',
+              'userAgent']
+    print(json.dumps({k: v for k, v in detail.items() if k in fields}))
+    for rule in violations:
+        print('[{}] Ingress rule violation: {}'.format(sgid, json.dumps(rule)))
+
+    # Delete the offending rules
+    try:
+        delete_ingress_rules(sgid=sgid, rules=violations)
+        print('[{}] Violations successfully deleted!'.format(sgid))
+    except ClientError as e:
+        print('Unable to delete violations due to boto3 error: {}'.format(e))

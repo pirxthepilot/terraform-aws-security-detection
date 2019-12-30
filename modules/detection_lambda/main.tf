@@ -14,7 +14,8 @@ resource "aws_lambda_function" "security_detection" {
 
   depends_on = [
     aws_cloudwatch_log_group.security_detection,
-    aws_iam_role_policy_attachment.security_detection
+    aws_iam_role_policy_attachment.security_detection_logging,
+    aws_iam_role_policy_attachment.security_detection_custom
   ]
 }
 
@@ -32,7 +33,7 @@ resource "aws_cloudwatch_log_group" "security_detection" {
 */
 
 resource "aws_iam_role" "security_detection" {
-  name_prefix = var.name
+  name_prefix = "${var.name}-"
 
   assume_role_policy = <<POLICY
 {
@@ -51,8 +52,10 @@ resource "aws_iam_role" "security_detection" {
 POLICY
 }
 
-resource "aws_iam_policy" "security_detection" {
-  name_prefix = var.name
+# IAM policy for logging to Cloudwatch
+
+resource "aws_iam_policy" "security_detection_logging" {
+  name_prefix = "${var.name}-logging-"
   description = "IAM policy for logging from a lambda"
 
   policy = <<POLICY
@@ -73,7 +76,21 @@ resource "aws_iam_policy" "security_detection" {
 POLICY
 }
 
-resource "aws_iam_role_policy_attachment" "security_detection" {
+resource "aws_iam_role_policy_attachment" "security_detection_logging" {
   role       = aws_iam_role.security_detection.name
-  policy_arn = aws_iam_policy.security_detection.arn
+  policy_arn = aws_iam_policy.security_detection_logging.arn
+}
+
+# IAM policy specific to the lambda's purpose
+
+resource "aws_iam_policy" "security_detection_custom" {
+  name_prefix = "${var.name}-custom-"
+  description = "Custom lambda policy"
+
+  policy = var.custom_role_policy
+}
+
+resource "aws_iam_role_policy_attachment" "security_detection_custom" {
+  role       = aws_iam_role.security_detection.name
+  policy_arn = aws_iam_policy.security_detection_custom.arn
 }
