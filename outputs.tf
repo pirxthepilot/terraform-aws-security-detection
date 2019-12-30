@@ -1,5 +1,5 @@
 output security_group_id {
-  value = aws_vpc.security_demo.default_security_group_id
+  value = aws_vpc.security_poc.default_security_group_id
 }
 
 output cloudtrail_s3_bucket_id {
