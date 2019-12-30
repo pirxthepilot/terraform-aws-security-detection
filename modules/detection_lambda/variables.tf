@@ -32,3 +32,9 @@ variable "description" {
   default     = null
   description = "Description for the lambda function (optional)"
 }
+
+variable "custom_role_policy" {
+  type        = string
+  default     = null
+  description = "Role policies specific to the lambda's purpose"
+}

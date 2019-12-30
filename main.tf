@@ -14,6 +14,11 @@ resource "aws_vpc" "security_demo" {
   }
 }
 
+# Get the ARN of the default security group
+data "aws_security_group" "security_demo" {
+  id = aws_vpc.security_demo.default_security_group_id
+}
+
 # Enable Cloudtrail (includes S3 bucket setup)
 module "cloudtrail" {
   source = "./modules/cloudtrail"
@@ -61,6 +66,21 @@ module "sg_ingress_rule_lambda" {
 
   filename = "./pkgtmp/sg_ingress_checker.zip"
   handler  = "sg_ingress_checker.lambda_handler"
+
+  custom_role_policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "ec2:RevokeSecurityGroupIngress"
+      ],
+      "Resource": "${data.aws_security_group.security_demo.arn}",
+      "Effect": "Allow"
+    }
+  ]
+}
+POLICY
 }
 
 # Subscribe the lambda to the SNS topic
