@@ -30,14 +30,14 @@ def detect_violations(data):
         # First, skip if rule is in whitelisted items
         if (
                 rule['ipProtocol'] == 'tcp' and
-                rule['fromPort'] in WHITELIST_TCP_PORTS and
-                rule['toPort'] in WHITELIST_TCP_PORTS
+                rule['fromPort'] == rule['toPort'] and
+                rule['fromPort'] in WHITELIST_TCP_PORTS
         ):
             continue
         if (
                 rule['ipProtocol'] == 'udp' and
-                rule['fromPort'] in WHITELIST_UDP_PORTS and
-                rule['toPort'] in WHITELIST_UDP_PORTS
+                rule['fromPort'] == rule['toPort'] and
+                rule['fromPort'] in WHITELIST_UDP_PORTS
         ):
             continue
         if (
