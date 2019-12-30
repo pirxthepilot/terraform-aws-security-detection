@@ -10,7 +10,7 @@ clean:
 
 .PHONY: package
 package: clean
-	test -d ${LAMBDA_PKGS} || mkdir ${LAMBDA_PKGS} &&\
+	@test -d ${LAMBDA_PKGS} || mkdir ${LAMBDA_PKGS} &&\
 	zip -j \
 		${LAMBDA_PKGS}/sg_ingress_checker.zip \
 		${LAMBDA_FUNCS}/sg_ingress_checker/sg_ingress_checker.py

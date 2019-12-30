@@ -122,6 +122,6 @@ def lambda_handler(event, context):
     # Delete the offending rules
     try:
         delete_ingress_rules(sgid=sgid, rules=violations)
-        print('[{}] Violations successfully deleted!'.format(sgid))
+        print('[{}] ACTIONED: Violations successfully deleted!'.format(sgid))
     except ClientError as e:
-        print('Unable to delete violations due to boto3 error: {}'.format(e))
+        print('[{}] Unable to delete violations due to error: {}'.format(sgid, e))
