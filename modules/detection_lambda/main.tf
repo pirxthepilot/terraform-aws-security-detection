@@ -84,6 +84,8 @@ resource "aws_iam_role_policy_attachment" "security_detection_logging" {
 # IAM policy specific to the lambda's purpose
 
 resource "aws_iam_policy" "security_detection_custom" {
+  count = var.custom_role_policy != null ? 1 : 0
+
   name_prefix = "${var.name}-custom-"
   description = "Custom lambda policy"
 
@@ -91,6 +93,8 @@ resource "aws_iam_policy" "security_detection_custom" {
 }
 
 resource "aws_iam_role_policy_attachment" "security_detection_custom" {
+  count = var.custom_role_policy != null ? 1 : 0
+
   role       = aws_iam_role.security_detection.name
-  policy_arn = aws_iam_policy.security_detection_custom.arn
+  policy_arn = aws_iam_policy.security_detection_custom[count.index].arn
 }
