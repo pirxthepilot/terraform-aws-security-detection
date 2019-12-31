@@ -59,6 +59,8 @@ Component deployments also include configuration of necessary IAM roles and poli
 
 ## Usage
 
+First ensure you have the [Terraform CLI](https://www.terraform.io/downloads.html) installed.
+
 Make sure you have credentials that can perform programmatic tasks with `AdministratorAccess` permissions. If you can run admin-level tasks from the AWS CLI, you are good to go.
 
 To deploy, simply run:
@@ -84,6 +86,8 @@ PRO TIP: A nice alternative to viewing logs from AWS Console or AWS CLI is to us
 ```
 awslogs get /aws/lambda/sg-ingress-rule --start 15m -w
 ```
+
+Finally, clean up by running either `terraform destroy` or `make destroy`. This will delete ALL resources created by this project.
 
 
 ## References

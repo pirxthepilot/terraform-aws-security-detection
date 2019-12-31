@@ -13,7 +13,7 @@ provider "aws" {
 */
 
 #  Spin up the test VPC whose default security group will
-#  will be used for this deployment
+#  be used for this deployment
 resource "aws_vpc" "security_poc" {
   cidr_block = "10.234.0.0/24"
 
